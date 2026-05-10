@@ -1,0 +1,25 @@
+{
+  "name": "@cli-talker/server",
+  "version": "0.0.1",
+  "private": true,
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "scripts": { "build": "tsc", "test": "vitest run", "typecheck": "tsc --noEmit" },
+  "dependencies": {
+    "@cli-talker/core": "workspace:*",
+    "@cli-talker/adapter-claude-code": "workspace:*",
+    "fastify": "^4.27.0",
+    "@fastify/static": "^7.0.0",
+    "@fastify/websocket": "^10.0.0",
+    "better-sqlite3": "^11.0.0",
+    "chokidar": "^3.6.0"
+  },
+  "devDependencies": {
+    "typescript": "^5.4.0",
+    "vitest": "^1.6.0",
+    "@types/better-sqlite3": "^7.6.0",
+    "ws": "^8.17.0",
+    "@types/ws": "^8.5.0"
+  }
+}

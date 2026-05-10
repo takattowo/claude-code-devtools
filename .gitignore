@@ -1,0 +1,15 @@
+node_modules/
+dist/
+build/
+.env
+.env.local
+.DS_Store
+*.log
+.superpowers/
+docs/superpowers/
+.cli-talker/
+coverage/
+.vite/
+*.tsbuildinfo
+packages/server/public/
+packages/web/dist/
