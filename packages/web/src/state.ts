@@ -52,7 +52,6 @@ export const useUiStore = create<UiState>((set) => ({
     view: 'sessions',
     selectedSessionId: id,
     selectedToolCallId: null,
-    mainTab: 'timeline',
     scrubberTurnIndex: null,
   }),
   setSelectedToolCall: (id) => set({ selectedToolCallId: id, rightTab: 'detail' }),
