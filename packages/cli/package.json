@@ -1,22 +1,63 @@
 {
-  "name": "cli-talker",
-  "version": "0.0.1",
+  "name": "claude-code-devtools",
+  "version": "0.1.0",
   "type": "module",
-  "bin": { "cli-talker": "./dist/index.js" },
+  "description": "Local web app that visualizes Claude Code sessions. Live tool-call timeline, context inspector, file heatmap, replay scrubber.",
+  "license": "MIT",
+  "author": "takattowo",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/takattowo/claude-code-devtools.git"
+  },
+  "homepage": "https://github.com/takattowo/claude-code-devtools#readme",
+  "bugs": "https://github.com/takattowo/claude-code-devtools/issues",
+  "keywords": [
+    "claude",
+    "claude-code",
+    "devtools",
+    "observability",
+    "agent",
+    "llm",
+    "timeline",
+    "telemetry"
+  ],
+  "bin": {
+    "claude-code-devtools": "./dist/index.js",
+    "cli-talker": "./dist/index.js"
+  },
+  "files": [
+    "dist",
+    "public",
+    "README.md",
+    "LICENSE"
+  ],
+  "engines": {
+    "node": ">=20.0.0"
+  },
+  "publishConfig": {
+    "access": "public",
+    "provenance": true
+  },
   "scripts": {
-    "build": "tsc",
+    "build": "tsup && node scripts/copy-public.mjs",
     "test": "vitest run --passWithNoTests",
     "typecheck": "tsc --noEmit",
     "dev": "tsx src/index.ts"
   },
   "dependencies": {
-    "@cli-talker/server": "workspace:*",
+    "better-sqlite3": "^11.0.0",
+    "fastify": "^4.27.0",
+    "@fastify/static": "^7.0.0",
+    "@fastify/websocket": "^10.0.0",
+    "chokidar": "^3.6.0",
     "commander": "^12.0.0",
     "open": "^10.1.0"
   },
   "devDependencies": {
-    "typescript": "^5.4.0",
+    "@cli-talker/server": "workspace:*",
+    "tsup": "^8.0.0",
     "tsx": "^4.7.0",
+    "typescript": "^5.4.0",
     "vitest": "^1.6.0"
   }
 }

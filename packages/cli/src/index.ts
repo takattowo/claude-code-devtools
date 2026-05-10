@@ -5,14 +5,14 @@ import { start } from '@cli-talker/server';
 
 const program = new Command();
 program
-  .name('cli-talker')
-  .description('Agent DevTools for Claude Code')
+  .name('claude-code-devtools')
+  .description('Local web app that visualizes Claude Code sessions.')
   .option('--port <port>', 'preferred port', (v) => Number(v), 7777)
   .option('--host <host>', 'bind host', '127.0.0.1')
   .option('--no-open', 'do not auto-open the browser')
   .action(async (opts: { port: number; host: string; open?: boolean }) => {
     const server = await start({ port: opts.port, host: opts.host });
-    process.stdout.write(`cli-talker listening at ${server.url}\n`);
+    process.stdout.write(`claude-code-devtools listening at ${server.url}\n`);
     if (opts.open !== false) {
       try { await open(server.url); } catch { /* headless ok */ }
     }

@@ -19,7 +19,7 @@ export interface StartedServer {
   close: () => Promise<void>;
 }
 
-const defaultDbPath = (): string => path.join(os.homedir(), '.cli-talker', 'db.sqlite');
+const defaultDbPath = (): string => path.join(os.homedir(), '.claude-code-devtools', 'db.sqlite');
 
 const tryListen = async (
   app: Awaited<ReturnType<typeof buildApp>>,

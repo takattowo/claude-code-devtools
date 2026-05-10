@@ -8,8 +8,10 @@ build/
 .superpowers/
 docs/superpowers/
 .cli-talker/
+.claude-code-devtools/
 coverage/
 .vite/
 *.tsbuildinfo
 packages/server/public/
 packages/web/dist/
+packages/cli/public/

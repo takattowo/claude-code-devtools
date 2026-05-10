@@ -6,11 +6,11 @@
   "license": "MIT",
   "engines": { "node": ">=20.0.0" },
   "scripts": {
-    "build": "pnpm -r --filter @cli-talker/core --filter @cli-talker/adapter-claude-code --filter @cli-talker/server --filter cli-talker build && pnpm --filter @cli-talker/web build",
+    "build": "pnpm -r --filter @cli-talker/core --filter @cli-talker/adapter-claude-code --filter @cli-talker/server build && pnpm --filter @cli-talker/web build && pnpm --filter claude-code-devtools build",
     "test": "pnpm -r --stream test",
     "lint": "eslint . --ext .js,.cjs,.ts,.tsx",
     "typecheck": "pnpm -r --stream typecheck",
-    "dev": "pnpm --filter @cli-talker/cli dev"
+    "dev": "pnpm --filter claude-code-devtools dev"
   },
   "devDependencies": {
     "@types/node": "^20.0.0",

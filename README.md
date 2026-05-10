@@ -6,6 +6,8 @@ Chrome-DevTools-style observability for [Claude Code](https://docs.claude.com/en
 
 > Status: early. Plan 1 features shipped. Plugin + npm publish coming.
 
+![demo](docs/demo.gif)
+
 ## Features
 
 - **Live timeline.** Every tool call (Read, Edit, Bash, etc.) streams in as the agent works. Status, file, duration at a glance.
@@ -17,7 +19,13 @@ Chrome-DevTools-style observability for [Claude Code](https://docs.claude.com/en
 
 ## Quickstart
 
-Requires Node 20+ and pnpm.
+Requires Node 20+.
+
+```bash
+npx claude-code-devtools
+```
+
+Or from source:
 
 ```bash
 git clone https://github.com/takattowo/claude-code-devtools.git
@@ -34,7 +42,7 @@ Run any Claude Code session in another terminal. New rows appear in the timeline
 ## CLI flags
 
 ```
-cli-talker [options]
+claude-code-devtools [options]
 
   --port <port>     preferred port (default: 7777, retries +10)
   --host <host>     bind host (default: 127.0.0.1)
@@ -72,7 +80,7 @@ pnpm monorepo, five workspace packages:
 | `@cli-talker/adapter-claude-code` | Parses Claude Code JSONL into normalized events. Discovery + chunked reader + line parser |
 | `@cli-talker/server` | Fastify HTTP+WS server, file watcher, REST routes (`/api/sessions`, `/turns`, `/tool-calls`, `/stats`, `/heatmap`), static SPA serving |
 | `@cli-talker/web` | React SPA: sidebar + main pane (timeline / heatmap tabs) + right pane (inspector / detail tabs) + replay scrubber |
-| `cli-talker` | CLI binary (`commander` + `open`) that boots the server and opens the browser |
+| `claude-code-devtools` | CLI binary (`commander` + `open`) that boots the server and opens the browser |
 
 The adapter layer is pluggable. Future adapters for Codex, Cursor, Gemini CLI implement the same `AgentAdapter` interface (`discover`, `readChunk`).
 
@@ -86,13 +94,13 @@ interface Turn      { id, sessionId, index, role, startedAt, endedAt, text, toke
 interface ToolCall  { id, turnId, sessionId, index, name, input, output, status, startedAt, endedAt, durationMs, errorMessage, filePath }
 ```
 
-Storage: `~/.cli-talker/db.sqlite`. Offsets persisted so restarts resume mid-file.
+Storage: `~/.claude-code-devtools/db.sqlite`. Offsets persisted so restarts resume mid-file.
 
 ## Development
 
 ```bash
 # Run server in watch mode (tsx)
-pnpm --filter cli-talker dev
+pnpm --filter claude-code-devtools dev
 
 # Run frontend with HMR (proxies API + WS to backend on :7777)
 pnpm --filter @cli-talker/web dev
@@ -114,7 +122,7 @@ pnpm build         # produces packages/server/public + per-package dist/
 
 All data stays local. No network calls except the chokidar file watcher reading your home directory. SQLite + transcripts never leave your machine.
 
-Transcripts can contain secrets (API keys, tokens, paths). The DB is at `~/.cli-talker/db.sqlite` — treat it like your shell history.
+Transcripts can contain secrets (API keys, tokens, paths). The DB is at `~/.claude-code-devtools/db.sqlite` — treat it like your shell history.
 
 ## Roadmap
 
@@ -127,7 +135,7 @@ Transcripts can contain secrets (API keys, tokens, paths). The DB is at `~/.cli-
 - [ ] Import / export sessions (share debug snapshots)
 - [ ] Adapters for Codex, Cursor CLI, Gemini CLI
 - [ ] Redact mode (`--redact` regex list)
-- [ ] npm publish (`npx claude-code-devtools`)
+- [x] npm publish (`npx claude-code-devtools`)
 
 ## License
 
