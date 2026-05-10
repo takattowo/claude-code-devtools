@@ -1,12 +1,17 @@
 # claude-code-devtools
 
+[![npm](https://img.shields.io/npm/v/claude-code-devtools.svg)](https://www.npmjs.com/package/claude-code-devtools)
+[![CI](https://github.com/takattowo/claude-code-devtools/actions/workflows/ci.yml/badge.svg)](https://github.com/takattowo/claude-code-devtools/actions/workflows/ci.yml)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+
 > Local web app that visualizes Claude Code sessions. Live tool-call timeline, context inspector, file heatmap, replay scrubber.
 
 Chrome-DevTools-style observability for [Claude Code](https://docs.claude.com/en/docs/claude-code/overview). Watch your agent work in real time, replay finished sessions, spot redundant reads, see where tokens go.
 
 > Status: early. Plan 1 features shipped. Plugin + npm publish coming.
 
-![demo](docs/demo.gif)
+> **Demo GIF:** placeholder — recording coming. See [docs/RECORDING.md](docs/RECORDING.md) for capture steps.
+> Once recorded at `docs/demo.gif`, swap this block back to `![demo](docs/demo.gif)`.
 
 ## Features
 

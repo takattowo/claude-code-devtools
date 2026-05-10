@@ -32,6 +32,9 @@ jobs:
 
       - run: pnpm test
 
+      - name: Upgrade npm for Trusted Publisher OIDC
+        run: npm install -g npm@latest
+
       - name: Verify tag matches package version
         shell: bash
         run: |
@@ -42,11 +45,9 @@ jobs:
             exit 1
           fi
 
-      - name: Publish to npm
+      - name: Publish to npm (via Trusted Publisher OIDC)
         working-directory: packages/cli
         run: npm publish --provenance --access public
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
       - name: Create GitHub release
         uses: softprops/action-gh-release@v2
