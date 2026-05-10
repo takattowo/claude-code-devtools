@@ -39,7 +39,7 @@ export const presetRange = (p: DatePreset): { since: number | null; until: numbe
 };
 
 export const useUiStore = create<UiState>((set) => ({
-  view: 'sessions',
+  view: 'dashboard',
   selectedSessionId: null,
   selectedToolCallId: null,
   rightTab: 'inspector',
