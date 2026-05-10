@@ -5,3 +5,5 @@ coverage
 pnpm-lock.yaml
 packages/server/public
 packages/web/dist
+packages/cli/public
+packages/cli/dist
