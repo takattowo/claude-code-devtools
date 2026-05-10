@@ -1,0 +1,11 @@
+description = "Boot Claude Code DevTools dashboard at http://127.0.0.1:7777"
+prompt = """
+Boot the Claude Code DevTools dashboard for the user.
+
+Steps:
+1. Probe whether the server is already up: GET http://127.0.0.1:7777/api/sessions. If it returns 200, skip to step 3.
+2. If not running, launch `npx claude-code-devtools@latest` as a background process (use run_in_background=true on the Bash tool). Wait ~3 seconds, then re-probe the health endpoint to confirm it came up.
+3. Tell the user, in one line: "DevTools running at http://127.0.0.1:7777". The npx process auto-opens the browser; do not open it via a separate tool call.
+
+Keep your response under 3 lines. Do not narrate the probe steps unless something fails.
+"""

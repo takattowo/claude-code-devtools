@@ -30,6 +30,14 @@ Requires Node 20+.
 npx claude-code-devtools
 ```
 
+Or as a Claude Code plugin (`/devtools` slash command):
+
+```
+/plugin marketplace add takattowo/claude-code-devtools
+/plugin install claude-code-devtools@claude-code-devtools
+/devtools
+```
+
 Or from source:
 
 ```bash
@@ -153,9 +161,9 @@ Transcripts can contain secrets (API keys, tokens, paths). The DB is at `~/.clau
 - [x] File heatmap
 - [x] Replay scrubber
 - [x] Resizable panes
-- [ ] Claude Code plugin (`/devtools` slash command + hook capture)
+- [x] Claude Code plugin — `/devtools` slash command, `devtools` skill, and hook capture (`SessionStart`/`PostToolUse`/`UserPromptSubmit`/`Stop` → `POST /api/ingest/hook`)
 - [ ] Import / export sessions (share debug snapshots)
-- [ ] Adapters for Codex, Cursor CLI, Gemini CLI
+- [ ] Adapters for Codex, Cursor CLI, Gemini CLI _(deferred — Claude Code focus first)_
 - [x] Redact mode (`--redact` regex list)
 - [x] npm publish (`npx claude-code-devtools`)
 - [x] Filter & search (cwd, model, status, date range, free-text, tool, file, errors)

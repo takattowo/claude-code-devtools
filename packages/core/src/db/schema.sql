@@ -51,3 +51,13 @@ CREATE TABLE IF NOT EXISTS file_offsets (
   offset_bytes INTEGER NOT NULL DEFAULT 0,
   updated_at INTEGER NOT NULL
 );
+
+CREATE TABLE IF NOT EXISTS hook_events (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  session_id TEXT,
+  event TEXT NOT NULL,
+  payload TEXT NOT NULL,
+  ts INTEGER NOT NULL
+);
+CREATE INDEX IF NOT EXISTS idx_hook_events_session ON hook_events(session_id, ts);
+CREATE INDEX IF NOT EXISTS idx_hook_events_ts ON hook_events(ts);

@@ -10,6 +10,7 @@ import { registerSessionsRoutes } from './routes/sessions.js';
 import { registerStatsRoutes } from './routes/stats.js';
 import { registerHeatmapRoutes } from './routes/heatmap.js';
 import { registerDashboardRoutes } from './routes/dashboard.js';
+import { registerIngestRoutes } from './routes/ingest.js';
 import { registerWebSocket } from './ws.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -30,6 +31,7 @@ export const buildApp = async (opts: BuildAppOptions): Promise<FastifyInstance> 
   registerStatsRoutes(app, opts.store);
   registerHeatmapRoutes(app, opts.store);
   registerDashboardRoutes(app, opts.store);
+  registerIngestRoutes(app, opts.store);
   await registerWebSocket(app, opts.normalizer);
 
   const publicDir = opts.publicDir ?? path.resolve(__dirname, '../public');

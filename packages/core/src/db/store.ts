@@ -2,7 +2,7 @@ import Database from 'better-sqlite3';
 import { readFileSync } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import type { DashboardSummary, Session, SessionFilter, ToolCall, TokenUsage, Turn } from '../types.js';
+import type { DashboardSummary, HookEvent, Session, SessionFilter, ToolCall, TokenUsage, Turn } from '../types.js';
 import { computeCostUsd } from '../pricing.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -334,6 +334,37 @@ export class Store {
 
   listToolCalls(sessionId: string): ToolCall[] {
     return (this.db.prepare('SELECT * FROM tool_calls WHERE session_id = ? ORDER BY started_at ASC').all(sessionId) as Record<string, unknown>[]).map(toolCallRow);
+  }
+
+  insertHookEvent(e: HookEvent): number {
+    const info = this.db.prepare(`
+      INSERT INTO hook_events (session_id, event, payload, ts)
+      VALUES (@sessionId, @event, @payload, @ts)
+    `).run({
+      sessionId: e.sessionId,
+      event: e.event,
+      payload: JSON.stringify(e.payload ?? {}),
+      ts: e.ts,
+    });
+    return Number(info.lastInsertRowid);
+  }
+
+  listHookEvents(sessionId: string | null, limit = 200): HookEvent[] {
+    const rows = sessionId
+      ? this.db.prepare(`
+          SELECT * FROM hook_events WHERE session_id = ?
+          ORDER BY ts DESC LIMIT ?
+        `).all(sessionId, limit) as Record<string, unknown>[]
+      : this.db.prepare(`
+          SELECT * FROM hook_events ORDER BY ts DESC LIMIT ?
+        `).all(limit) as Record<string, unknown>[];
+    return rows.map((r) => ({
+      id: r.id as number,
+      sessionId: (r.session_id as string | null) ?? null,
+      event: r.event as string,
+      payload: JSON.parse((r.payload as string) ?? '{}'),
+      ts: r.ts as number,
+    }));
   }
 
   setFileOffset(filePath: string, offset: number): void {

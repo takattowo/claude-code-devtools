@@ -89,6 +89,14 @@ export interface DashboardSummary {
   topFiles: Array<{ filePath: string; count: number }>;
 }
 
+export interface HookEvent {
+  id?: number;
+  sessionId: string | null;
+  event: string;
+  payload: unknown;
+  ts: number;
+}
+
 export type AdapterEvent =
   | { type: 'session-start'; session: Session }
   | { type: 'turn-start'; turn: Omit<Turn, 'tokens' | 'endedAt'> & { tokens?: TokenUsage; endedAt?: number } }

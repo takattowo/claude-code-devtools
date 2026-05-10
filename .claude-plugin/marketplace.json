@@ -1,0 +1,17 @@
+{
+  "$schema": "https://anthropic.com/claude-code/marketplace.schema.json",
+  "name": "claude-code-devtools",
+  "description": "Local devtools dashboard for Claude Code. Live tool-call timeline, file heatmap, replay, cost analytics.",
+  "owner": {
+    "name": "takattowo",
+    "url": "https://github.com/takattowo"
+  },
+  "plugins": [
+    {
+      "name": "claude-code-devtools",
+      "description": "Boot the devtools dashboard via /devtools. Real-time observability for Claude Code sessions.",
+      "source": "./plugin",
+      "category": "developer-tools"
+    }
+  ]
+}

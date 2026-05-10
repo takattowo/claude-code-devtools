@@ -1,0 +1,66 @@
+{
+  "name": "claude-code-devtools",
+  "description": "Local devtools dashboard for Claude Code. Boot via /devtools to inspect live tool-call timeline, file heatmap, replay scrubber, and cost analytics.",
+  "version": "0.1.0",
+  "author": {
+    "name": "takattowo",
+    "url": "https://github.com/takattowo"
+  },
+  "homepage": "https://github.com/takattowo/claude-code-devtools",
+  "repository": "https://github.com/takattowo/claude-code-devtools",
+  "license": "MIT",
+  "keywords": [
+    "claude-code",
+    "devtools",
+    "observability",
+    "agent",
+    "timeline",
+    "telemetry"
+  ],
+  "hooks": {
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node \"${CLAUDE_PLUGIN_ROOT}/hooks/devtools-capture.mjs\" SessionStart",
+            "timeout": 2
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node \"${CLAUDE_PLUGIN_ROOT}/hooks/devtools-capture.mjs\" PostToolUse",
+            "timeout": 2
+          }
+        ]
+      }
+    ],
+    "UserPromptSubmit": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node \"${CLAUDE_PLUGIN_ROOT}/hooks/devtools-capture.mjs\" UserPromptSubmit",
+            "timeout": 2
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node \"${CLAUDE_PLUGIN_ROOT}/hooks/devtools-capture.mjs\" Stop",
+            "timeout": 2
+          }
+        ]
+      }
+    ]
+  }
+}
