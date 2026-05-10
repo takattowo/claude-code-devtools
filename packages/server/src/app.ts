@@ -9,6 +9,7 @@ import type { Watcher } from './watcher.js';
 import { registerSessionsRoutes } from './routes/sessions.js';
 import { registerStatsRoutes } from './routes/stats.js';
 import { registerHeatmapRoutes } from './routes/heatmap.js';
+import { registerDashboardRoutes } from './routes/dashboard.js';
 import { registerWebSocket } from './ws.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -28,6 +29,7 @@ export const buildApp = async (opts: BuildAppOptions): Promise<FastifyInstance> 
   registerSessionsRoutes(app, opts.store, redactor);
   registerStatsRoutes(app, opts.store);
   registerHeatmapRoutes(app, opts.store);
+  registerDashboardRoutes(app, opts.store);
   await registerWebSocket(app, opts.normalizer);
 
   const publicDir = opts.publicDir ?? path.resolve(__dirname, '../public');

@@ -40,9 +40,11 @@ const filePathFromInput = (toolName: string, input: unknown): string | null => {
 };
 
 const turnSeqIndex = new Map<string, number>();
+const sessionModel = new Map<string, string>();
 
 export const resetParserState = (): void => {
   turnSeqIndex.clear();
+  sessionModel.clear();
 };
 
 const nextTurnIndex = (sessionId: string): number => {
@@ -78,19 +80,26 @@ export const parseLine = (line: string, state: ParseLineState): ParseLineResult 
   let sessionId = state.sessionId;
 
   if ((raw.type === 'user' || raw.type === 'assistant') && raw.sessionId && raw.cwd) {
-    if (sessionId !== raw.sessionId) {
+    const incomingModel = raw.message?.model ?? null;
+    const knownModel = sessionModel.get(raw.sessionId);
+    const firstSighting = sessionId !== raw.sessionId;
+    const modelUpgrade = !!incomingModel && knownModel !== incomingModel;
+
+    if (firstSighting || modelUpgrade) {
       const session: Session = {
         id: raw.sessionId,
         adapter: 'claude-code',
         cwd: raw.cwd,
         startedAt: raw.timestamp ? Date.parse(raw.timestamp) : Date.now(),
         endedAt: null,
-        model: raw.message?.model ?? 'unknown',
+        model: incomingModel ?? knownModel ?? 'unknown',
         status: 'active',
         meta: {},
       };
       events.push({ type: 'session-start', session });
-      sessionId = raw.sessionId;
+      if (incomingModel) sessionModel.set(raw.sessionId, incomingModel);
+      else if (!knownModel) sessionModel.set(raw.sessionId, 'unknown');
+      if (firstSighting) sessionId = raw.sessionId;
     }
   }
 

@@ -2,7 +2,8 @@ import Database from 'better-sqlite3';
 import { readFileSync } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import type { Session, ToolCall, Turn } from '../types.js';
+import type { DashboardSummary, Session, SessionFilter, ToolCall, TokenUsage, Turn } from '../types.js';
+import { computeCostUsd } from '../pricing.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const SCHEMA_PATH = path.resolve(__dirname, 'schema.sql');
@@ -176,6 +177,150 @@ export class Store {
 
   listSessions(): Session[] {
     return (this.db.prepare('SELECT * FROM sessions ORDER BY started_at DESC').all() as Record<string, unknown>[]).map(sessionRow);
+  }
+
+  findSessions(filter: SessionFilter): Session[] {
+    const where: string[] = [];
+    const params: Record<string, unknown> = {};
+    if (filter.cwd) { where.push("s.cwd LIKE @cwd"); params.cwd = `%${filter.cwd}%`; }
+    if (filter.model) { where.push("s.model LIKE @model"); params.model = `%${filter.model}%`; }
+    if (filter.status) { where.push("s.status = @status"); params.status = filter.status; }
+    if (filter.since != null) { where.push("s.started_at >= @since"); params.since = filter.since; }
+    if (filter.until != null) { where.push("s.started_at <= @until"); params.until = filter.until; }
+    if (filter.q) {
+      where.push(`(
+        s.cwd LIKE @q
+        OR EXISTS (SELECT 1 FROM turns t WHERE t.session_id = s.id AND t.text LIKE @q)
+        OR EXISTS (SELECT 1 FROM tool_calls tc WHERE tc.session_id = s.id
+                   AND (tc.input LIKE @q OR tc.output LIKE @q OR tc.name LIKE @q OR tc.file_path LIKE @q))
+      )`);
+      params.q = `%${filter.q}%`;
+    }
+    if (filter.tool) {
+      where.push("EXISTS (SELECT 1 FROM tool_calls tc WHERE tc.session_id = s.id AND tc.name = @tool)");
+      params.tool = filter.tool;
+    }
+    if (filter.filePath) {
+      where.push("EXISTS (SELECT 1 FROM tool_calls tc WHERE tc.session_id = s.id AND tc.file_path LIKE @filePath)");
+      params.filePath = `%${filter.filePath}%`;
+    }
+    if (filter.hasErrors) {
+      where.push("EXISTS (SELECT 1 FROM tool_calls tc WHERE tc.session_id = s.id AND tc.status = 'error')");
+    }
+    const whereClause = where.length ? `WHERE ${where.join(' AND ')}` : '';
+    const limit = filter.limit && filter.limit > 0 ? Math.min(filter.limit, 1000) : 500;
+    const offset = filter.offset && filter.offset > 0 ? filter.offset : 0;
+    const sql = `SELECT s.* FROM sessions s ${whereClause} ORDER BY s.started_at DESC LIMIT ${limit} OFFSET ${offset}`;
+    return (this.db.prepare(sql).all(params) as Record<string, unknown>[]).map(sessionRow);
+  }
+
+  aggregateDashboard(since: number | null, until: number | null): DashboardSummary {
+    const where: string[] = [];
+    const params: Record<string, unknown> = {};
+    if (since != null) { where.push('s.started_at >= @since'); params.since = since; }
+    if (until != null) { where.push('s.started_at <= @until'); params.until = until; }
+    const w = where.length ? `WHERE ${where.join(' AND ')}` : '';
+
+    const sessions = (this.db.prepare(`SELECT s.* FROM sessions s ${w}`).all(params) as Record<string, unknown>[]).map(sessionRow);
+    const sessionIds = sessions.map((s) => s.id);
+
+    const empty: TokenUsage = { input: 0, output: 0, cacheRead: 0, cacheCreate: 0 };
+    if (sessionIds.length === 0) {
+      return {
+        range: { since, until },
+        counts: { sessions: 0, turns: 0, toolCalls: 0, errors: 0 },
+        tokens: empty,
+        cacheHitRate: 0,
+        costUsd: 0,
+        costByModel: [],
+        topTools: [],
+        topFiles: [],
+      };
+    }
+
+    const placeholders = sessionIds.map((_, i) => `@s${i}`).join(',');
+    const idParams: Record<string, unknown> = {};
+    sessionIds.forEach((id, i) => { idParams[`s${i}`] = id; });
+
+    const turnAgg = this.db.prepare(`
+      SELECT COUNT(*) AS c,
+        COALESCE(SUM(tokens_input),0) AS ti,
+        COALESCE(SUM(tokens_output),0) AS tout,
+        COALESCE(SUM(tokens_cache_read),0) AS tcr,
+        COALESCE(SUM(tokens_cache_create),0) AS tcc
+      FROM turns WHERE session_id IN (${placeholders})
+    `).get(idParams) as { c: number; ti: number; tout: number; tcr: number; tcc: number };
+
+    const callAgg = this.db.prepare(`
+      SELECT COUNT(*) AS c,
+        SUM(CASE WHEN status='error' THEN 1 ELSE 0 END) AS errs
+      FROM tool_calls WHERE session_id IN (${placeholders})
+    `).get(idParams) as { c: number; errs: number };
+
+    const tokens: TokenUsage = {
+      input: turnAgg.ti, output: turnAgg.tout,
+      cacheRead: turnAgg.tcr, cacheCreate: turnAgg.tcc,
+    };
+    const cacheHitRate = tokens.cacheRead + tokens.input > 0
+      ? tokens.cacheRead / (tokens.cacheRead + tokens.input) : 0;
+
+    const perSessionTokens = this.db.prepare(`
+      SELECT session_id,
+        COALESCE(SUM(tokens_input),0) AS ti,
+        COALESCE(SUM(tokens_output),0) AS tout,
+        COALESCE(SUM(tokens_cache_read),0) AS tcr,
+        COALESCE(SUM(tokens_cache_create),0) AS tcc
+      FROM turns WHERE session_id IN (${placeholders})
+      GROUP BY session_id
+    `).all(idParams) as Array<{ session_id: string; ti: number; tout: number; tcr: number; tcc: number }>;
+
+    const modelAcc = new Map<string, { tokens: TokenUsage; costUsd: number }>();
+    for (const s of sessions) {
+      const row = perSessionTokens.find((r) => r.session_id === s.id);
+      const t: TokenUsage = row
+        ? { input: row.ti, output: row.tout, cacheRead: row.tcr, cacheCreate: row.tcc }
+        : { ...empty };
+      const cost = computeCostUsd(s.model, t);
+      const cur = modelAcc.get(s.model) ?? { tokens: { ...empty }, costUsd: 0 };
+      cur.tokens.input += t.input;
+      cur.tokens.output += t.output;
+      cur.tokens.cacheRead += t.cacheRead;
+      cur.tokens.cacheCreate += t.cacheCreate;
+      cur.costUsd += cost;
+      modelAcc.set(s.model, cur);
+    }
+    const costByModel = Array.from(modelAcc.entries())
+      .map(([model, v]) => ({ model, tokens: v.tokens, costUsd: v.costUsd }))
+      .sort((a, b) => b.costUsd - a.costUsd);
+    const totalCost = costByModel.reduce((sum, m) => sum + m.costUsd, 0);
+
+    const topTools = this.db.prepare(`
+      SELECT name, COUNT(*) AS count FROM tool_calls
+      WHERE session_id IN (${placeholders})
+      GROUP BY name ORDER BY count DESC LIMIT 10
+    `).all(idParams) as Array<{ name: string; count: number }>;
+
+    const topFiles = this.db.prepare(`
+      SELECT file_path AS filePath, COUNT(*) AS count FROM tool_calls
+      WHERE session_id IN (${placeholders}) AND file_path IS NOT NULL
+      GROUP BY file_path ORDER BY count DESC LIMIT 10
+    `).all(idParams) as Array<{ filePath: string; count: number }>;
+
+    return {
+      range: { since, until },
+      counts: {
+        sessions: sessions.length,
+        turns: turnAgg.c,
+        toolCalls: callAgg.c,
+        errors: callAgg.errs ?? 0,
+      },
+      tokens,
+      cacheHitRate,
+      costUsd: totalCost,
+      costByModel,
+      topTools,
+      topFiles,
+    };
   }
 
   getSession(id: string): Session | null {

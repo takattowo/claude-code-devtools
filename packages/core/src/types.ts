@@ -64,6 +64,31 @@ export interface TokenStat {
   costUsd: number;
 }
 
+export interface SessionFilter {
+  cwd?: string;
+  model?: string;
+  status?: string;
+  since?: number;
+  until?: number;
+  q?: string;
+  tool?: string;
+  filePath?: string;
+  hasErrors?: boolean;
+  limit?: number;
+  offset?: number;
+}
+
+export interface DashboardSummary {
+  range: { since: number | null; until: number | null };
+  counts: { sessions: number; turns: number; toolCalls: number; errors: number };
+  tokens: TokenUsage;
+  cacheHitRate: number;
+  costUsd: number;
+  costByModel: Array<{ model: string; costUsd: number; tokens: TokenUsage }>;
+  topTools: Array<{ name: string; count: number }>;
+  topFiles: Array<{ filePath: string; count: number }>;
+}
+
 export type AdapterEvent =
   | { type: 'session-start'; session: Session }
   | { type: 'turn-start'; turn: Omit<Turn, 'tokens' | 'endedAt'> & { tokens?: TokenUsage; endedAt?: number } }

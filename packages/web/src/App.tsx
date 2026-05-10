@@ -3,6 +3,7 @@ import { SessionSidebar } from './components/SessionSidebar.js';
 import { MainPane } from './components/MainPane.js';
 import { ToolCallDetail } from './components/ToolCallDetail.js';
 import { ContextInspector } from './components/ContextInspector.js';
+import { DashboardView } from './components/DashboardView.js';
 import { useUiStore } from './state.js';
 
 const Handle = () => (
@@ -35,18 +36,29 @@ const RightPane = () => {
   );
 };
 
-export const App = () => (
-  <Group orientation="horizontal" className="h-full">
-    <Panel defaultSize="18%" minSize="10%" maxSize="40%">
-      <SessionSidebar />
-    </Panel>
-    <Handle />
-    <Panel defaultSize="56%" minSize="30%">
-      <MainPane />
-    </Panel>
-    <Handle />
-    <Panel defaultSize="26%" minSize="15%" maxSize="50%">
-      <RightPane />
-    </Panel>
-  </Group>
-);
+export const App = () => {
+  const view = useUiStore((s) => s.view);
+  return (
+    <Group orientation="horizontal" className="h-full">
+      <Panel defaultSize="22%" minSize="14%" maxSize="40%">
+        <SessionSidebar />
+      </Panel>
+      <Handle />
+      {view === 'dashboard' ? (
+        <Panel defaultSize="78%" minSize="40%">
+          <DashboardView />
+        </Panel>
+      ) : (
+        <>
+          <Panel defaultSize="52%" minSize="30%">
+            <MainPane />
+          </Panel>
+          <Handle />
+          <Panel defaultSize="26%" minSize="15%" maxSize="50%">
+            <RightPane />
+          </Panel>
+        </>
+      )}
+    </Group>
+  );
+};

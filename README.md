@@ -158,6 +158,8 @@ Transcripts can contain secrets (API keys, tokens, paths). The DB is at `~/.clau
 - [ ] Adapters for Codex, Cursor CLI, Gemini CLI
 - [x] Redact mode (`--redact` regex list)
 - [x] npm publish (`npx claude-code-devtools`)
+- [x] Filter & search (cwd, model, status, date range, free-text, tool, file, errors)
+- [x] Dashboard view (totals, cost-by-model, top tools, top files)
 
 ## License
 

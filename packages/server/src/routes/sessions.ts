@@ -1,5 +1,5 @@
 import type { FastifyInstance } from 'fastify';
-import type { Store, Redactor, Turn, ToolCall } from '@cli-talker/core';
+import type { Store, Redactor, SessionFilter, Turn, ToolCall } from '@cli-talker/core';
 
 const redactTurn = (r: Redactor, t: Turn): Turn => ({ ...t, text: r.apply(t.text) ?? null });
 const redactToolCall = (r: Redactor, c: ToolCall): ToolCall => ({
@@ -14,7 +14,29 @@ export const registerSessionsRoutes = (
   store: Store,
   redactor: Redactor,
 ): void => {
-  app.get('/api/sessions', async () => ({ sessions: store.listSessions() }));
+  app.get<{
+    Querystring: {
+      cwd?: string; model?: string; status?: string;
+      since?: string; until?: string; q?: string;
+      tool?: string; filePath?: string; hasErrors?: string;
+      limit?: string; offset?: string;
+    };
+  }>('/api/sessions', async (req) => {
+    const qp = req.query ?? {};
+    const hasFilters = !!(qp.cwd || qp.model || qp.status || qp.since || qp.until
+      || qp.q || qp.tool || qp.filePath || qp.hasErrors || qp.limit || qp.offset);
+    if (!hasFilters) return { sessions: store.listSessions() };
+    const filter: SessionFilter = {
+      cwd: qp.cwd, model: qp.model, status: qp.status,
+      since: qp.since ? Number(qp.since) : undefined,
+      until: qp.until ? Number(qp.until) : undefined,
+      q: qp.q, tool: qp.tool, filePath: qp.filePath,
+      hasErrors: qp.hasErrors === '1' || qp.hasErrors === 'true' ? true : undefined,
+      limit: qp.limit ? Number(qp.limit) : undefined,
+      offset: qp.offset ? Number(qp.offset) : undefined,
+    };
+    return { sessions: store.findSessions(filter) };
+  });
 
   app.get<{ Params: { id: string } }>('/api/sessions/:id', async (req, reply) => {
     const s = store.getSession(req.params.id);

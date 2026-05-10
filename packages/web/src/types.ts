@@ -56,3 +56,33 @@ export interface HeatmapEntry {
   errors: number;
   lastTouchAt: number;
 }
+
+export interface SessionFilter {
+  cwd?: string;
+  model?: string;
+  status?: string;
+  since?: number;
+  until?: number;
+  q?: string;
+  tool?: string;
+  filePath?: string;
+  hasErrors?: boolean;
+}
+
+export interface TokenUsage {
+  input: number;
+  output: number;
+  cacheRead: number;
+  cacheCreate: number;
+}
+
+export interface DashboardSummary {
+  range: { since: number | null; until: number | null };
+  counts: { sessions: number; turns: number; toolCalls: number; errors: number };
+  tokens: TokenUsage;
+  cacheHitRate: number;
+  costUsd: number;
+  costByModel: Array<{ model: string; costUsd: number; tokens: TokenUsage }>;
+  topTools: Array<{ name: string; count: number }>;
+  topFiles: Array<{ filePath: string; count: number }>;
+}
