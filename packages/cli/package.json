@@ -1,6 +1,6 @@
 {
   "name": "claude-code-devtools",
-  "version": "0.1.4",
+  "version": "0.1.5",
   "type": "module",
   "description": "Local web app that visualizes Claude Code sessions. Live tool-call timeline, context inspector, file heatmap, replay scrubber.",
   "license": "MIT",
