@@ -26,11 +26,11 @@ jobs:
 
       - run: pnpm install --frozen-lockfile
 
+      - run: pnpm build
+
       - run: pnpm typecheck
 
       - run: pnpm test
-
-      - run: pnpm build
 
       - name: Verify tag matches package version
         shell: bash
