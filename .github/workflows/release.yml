@@ -45,9 +45,11 @@ jobs:
             exit 1
           fi
 
-      - name: Publish to npm (via Trusted Publisher OIDC)
+      - name: Publish to npm
         working-directory: packages/cli
         run: npm publish --provenance --access public
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
       - name: Create GitHub release
         uses: softprops/action-gh-release@v2
