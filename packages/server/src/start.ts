@@ -1,7 +1,7 @@
 import path from 'node:path';
 import os from 'node:os';
 import { promises as fs } from 'node:fs';
-import { Store, Normalizer } from '@cli-talker/core';
+import { Store, Normalizer, Redactor } from '@cli-talker/core';
 import { createClaudeCodeAdapter } from '@cli-talker/adapter-claude-code';
 import { Watcher } from './watcher.js';
 import { buildApp } from './app.js';
@@ -11,6 +11,8 @@ export interface StartOptions {
   host?: string;
   dbPath?: string;
   watchRoot?: string;
+  redactPatterns?: string[];
+  redactDefaults?: boolean;
 }
 
 export interface StartedServer {
@@ -47,7 +49,13 @@ export const start = async (opts: StartOptions = {}): Promise<StartedServer> => 
   const watchRoot = opts.watchRoot ?? path.join(os.homedir(), '.claude', 'projects');
   const watcher = new Watcher({ store, normalizer, adapter, root: watchRoot });
   await watcher.start();
-  const app = await buildApp({ store, watcher, normalizer });
+  const customPatterns = opts.redactPatterns ?? [];
+  const optedIn = customPatterns.length > 0;
+  const redactor = new Redactor({
+    patterns: customPatterns,
+    includeDefaults: optedIn && opts.redactDefaults !== false,
+  });
+  const app = await buildApp({ store, watcher, normalizer, redactor });
   const host = opts.host ?? '127.0.0.1';
   const requestedPort = opts.port ?? 7777;
   let url: string;

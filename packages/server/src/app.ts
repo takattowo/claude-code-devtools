@@ -3,7 +3,8 @@ import fastifyStatic from '@fastify/static';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { existsSync } from 'node:fs';
-import type { Store, Normalizer } from '@cli-talker/core';
+import type { Store, Normalizer, Redactor } from '@cli-talker/core';
+import { Redactor as RedactorClass } from '@cli-talker/core';
 import type { Watcher } from './watcher.js';
 import { registerSessionsRoutes } from './routes/sessions.js';
 import { registerStatsRoutes } from './routes/stats.js';
@@ -17,12 +18,14 @@ export interface BuildAppOptions {
   watcher: Watcher | null;
   normalizer: Normalizer;
   publicDir?: string;
+  redactor?: Redactor;
 }
 
 export const buildApp = async (opts: BuildAppOptions): Promise<FastifyInstance> => {
   const app = Fastify({ logger: false });
   app.get('/health', async () => ({ status: 'ok' }));
-  registerSessionsRoutes(app, opts.store);
+  const redactor = opts.redactor ?? new RedactorClass({ includeDefaults: false });
+  registerSessionsRoutes(app, opts.store, redactor);
   registerStatsRoutes(app, opts.store);
   registerHeatmapRoutes(app, opts.store);
   await registerWebSocket(app, opts.normalizer);

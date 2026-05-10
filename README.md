@@ -49,10 +49,27 @@ Run any Claude Code session in another terminal. New rows appear in the timeline
 ```
 claude-code-devtools [options]
 
-  --port <port>     preferred port (default: 7777, retries +10)
-  --host <host>     bind host (default: 127.0.0.1)
-  --no-open         do not auto-open the browser
+  --port <port>           preferred port (default: 7777, retries +10)
+  --host <host>           bind host (default: 127.0.0.1)
+  --no-open               do not auto-open the browser
+  --redact <pattern>      regex to redact from API output (repeatable)
+  --no-redact-defaults    disable built-in default redaction patterns
 ```
+
+### Redact mode
+
+Strip secrets from the timeline before recording a demo or sharing a snapshot. Redaction is applied at API response time, so the underlying SQLite DB is never modified — toggle off and the original data is back.
+
+```bash
+# Add a custom pattern (repeatable). Built-in patterns for common API keys
+# and tokens are included automatically when --redact is used.
+claude-code-devtools --redact "MY_INTERNAL_TOKEN_\d+" --redact "ACME-[A-Z0-9]+"
+
+# Custom patterns only, no defaults.
+claude-code-devtools --redact "secret_\w+" --no-redact-defaults
+```
+
+Built-in defaults match: `sk-…` / `sk-ant-…` Anthropic keys, `ghp_…` / `gho_…` / `github_pat_…` GitHub tokens, `xoxb-…` / `xoxp-…` Slack tokens, `AKIA…` AWS access keys, `AIza…` Google API keys.
 
 ## How it works
 
@@ -139,7 +156,7 @@ Transcripts can contain secrets (API keys, tokens, paths). The DB is at `~/.clau
 - [ ] Claude Code plugin (`/devtools` slash command + hook capture)
 - [ ] Import / export sessions (share debug snapshots)
 - [ ] Adapters for Codex, Cursor CLI, Gemini CLI
-- [ ] Redact mode (`--redact` regex list)
+- [x] Redact mode (`--redact` regex list)
 - [x] npm publish (`npx claude-code-devtools`)
 
 ## License

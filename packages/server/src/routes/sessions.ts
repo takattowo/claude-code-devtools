@@ -1,7 +1,19 @@
 import type { FastifyInstance } from 'fastify';
-import type { Store } from '@cli-talker/core';
+import type { Store, Redactor, Turn, ToolCall } from '@cli-talker/core';
 
-export const registerSessionsRoutes = (app: FastifyInstance, store: Store): void => {
+const redactTurn = (r: Redactor, t: Turn): Turn => ({ ...t, text: r.apply(t.text) ?? null });
+const redactToolCall = (r: Redactor, c: ToolCall): ToolCall => ({
+  ...c,
+  input: r.applyDeep(c.input),
+  output: r.apply(c.output) ?? null,
+  errorMessage: r.apply(c.errorMessage) ?? null,
+});
+
+export const registerSessionsRoutes = (
+  app: FastifyInstance,
+  store: Store,
+  redactor: Redactor,
+): void => {
   app.get('/api/sessions', async () => ({ sessions: store.listSessions() }));
 
   app.get<{ Params: { id: string } }>('/api/sessions/:id', async (req, reply) => {
@@ -10,11 +22,15 @@ export const registerSessionsRoutes = (app: FastifyInstance, store: Store): void
     return { session: s };
   });
 
-  app.get<{ Params: { id: string } }>('/api/sessions/:id/turns', async (req) => ({
-    turns: store.listTurns(req.params.id),
-  }));
+  app.get<{ Params: { id: string } }>('/api/sessions/:id/turns', async (req) => {
+    const turns = store.listTurns(req.params.id);
+    return { turns: redactor.enabled ? turns.map((t) => redactTurn(redactor, t)) : turns };
+  });
 
-  app.get<{ Params: { id: string } }>('/api/sessions/:id/tool-calls', async (req) => ({
-    toolCalls: store.listToolCalls(req.params.id),
-  }));
+  app.get<{ Params: { id: string } }>('/api/sessions/:id/tool-calls', async (req) => {
+    const toolCalls = store.listToolCalls(req.params.id);
+    return {
+      toolCalls: redactor.enabled ? toolCalls.map((c) => redactToolCall(redactor, c)) : toolCalls,
+    };
+  });
 };
