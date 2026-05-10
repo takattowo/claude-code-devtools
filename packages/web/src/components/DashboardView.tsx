@@ -23,11 +23,13 @@ const Stat = ({ label, value, sub }: { label: string; value: string; sub?: strin
 export const DashboardView = () => {
   const datePreset = useUiStore((s) => s.datePreset);
   const setDatePreset = useUiStore((s) => s.setDatePreset);
-  const range = presetRange(datePreset);
 
   const { data: summary, isLoading } = useQuery({
-    queryKey: ['dashboard', range.since, range.until],
-    queryFn: () => api.getDashboard(range.since, range.until),
+    queryKey: ['dashboard', datePreset],
+    queryFn: () => {
+      const r = presetRange(datePreset);
+      return api.getDashboard(r.since, r.until);
+    },
     refetchInterval: 5_000,
   });
 

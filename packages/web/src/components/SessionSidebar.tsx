@@ -8,16 +8,17 @@ export const SessionSidebar = () => {
   const datePreset = useUiStore((s) => s.datePreset);
   const view = useUiStore((s) => s.view);
   const setView = useUiStore((s) => s.setView);
-  const range = presetRange(datePreset);
-  const queryFilter = {
-    ...filter,
-    since: range.since ?? filter.since,
-    until: range.until ?? filter.until,
-  };
 
   const { data, isLoading } = useQuery({
-    queryKey: ['sessions', queryFilter],
-    queryFn: () => api.listSessions(queryFilter),
+    queryKey: ['sessions', filter, datePreset],
+    queryFn: () => {
+      const r = presetRange(datePreset);
+      return api.listSessions({
+        ...filter,
+        since: r.since ?? filter.since,
+        until: r.until ?? filter.until,
+      });
+    },
     refetchInterval: 3_000,
   });
   const selectedId = useUiStore((s) => s.selectedSessionId);
