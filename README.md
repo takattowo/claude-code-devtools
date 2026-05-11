@@ -5,15 +5,15 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
 > Local web app that visualizes Claude Code sessions. Live tool-call timeline, context inspector, file heatmap, replay scrubber.
+<img alt="image" src="https://github.com/user-attachments/assets/c8d2327d-ad9c-40ff-a10a-65362bca3e6b" />
 
 Chrome-DevTools-style observability for [Claude Code](https://docs.claude.com/en/docs/claude-code/overview). Watch your agent work in real time, replay finished sessions, spot redundant reads, see where tokens go.
 
-> Status: early. Plan 1 features shipped. Plugin + npm publish coming.
-
-> **Demo GIF:** placeholder — recording coming. See [docs/RECORDING.md](docs/RECORDING.md) for capture steps.
-> Once recorded at `docs/demo.gif`, swap this block back to `![demo](docs/demo.gif)`.
 
 ## Features
+
+<img alt="image" src="https://github.com/user-attachments/assets/1b06f54e-692b-456c-92a9-c918fb896ccf" />
+
 
 - **Live timeline.** Every tool call (Read, Edit, Bash, etc.) streams in as the agent works. Status, file, duration at a glance.
 - **Context inspector.** Per-session model, token breakdown (input/output/cache read/cache create), cache hit rate, total cost.
